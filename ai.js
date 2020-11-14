@@ -1,12 +1,18 @@
-function checkWinner() {
+
+function checkWinner(board) {
  //how do?
+ let winner = "";
+
+ if(getAvailableMoves(board).length == 0 && winner == "") {
+  return "Tie";
+ }
 }
 
 function getAvailableMoves(board) {
   let availableMoves = [];
   let move;
   for( let i = 0; i < 7 ; i++) {
-    move = columnMove(i);
+    move = columnMove(board, i);
     if(move != [-1, -1]) {
       availableMoves.push(move);
     }
@@ -15,9 +21,9 @@ function getAvailableMoves(board) {
   return availableMoves;
 }
 
-function columnMove(column) {
+function columnMove(board, column) {
 
-  for( let i = 0; i < 6; i++) {
+  for( let i = 5; i >= 0; i--) {
     if(board[i][column] === 0) {
       return [i, column];
     }
@@ -29,18 +35,19 @@ function columnMove(column) {
 function getMove(player, board) {
   // TODO: Determine valid moves
   // TODO: Calculate best move
-  console.log(player);
-  console.log(board);
-
-  console.log(getAvailableMoves(board));
+  //console.log(player);
+  //console.log(board);
 
   //find available moves
+  let availableMoves = getAvailableMoves(board);
+
+  let randomColumn = availableMoves[Math.floor(Math.random() * availableMoves.length)][1];
 
   //loop through and find scores using algorithm
 
   //pick best one
 
-  return {column: 1};
+  return {column: randomColumn};
 }
 
 function prepareResponse(move) {
