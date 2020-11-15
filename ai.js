@@ -196,12 +196,107 @@ function getRandomMove(player, board) {
 function getMove(player, board) {
   
   //find available moves
+  let availableMoves = getAvailableMoves(board);
+  
+  let bestMove;
 
-  //evaluate each with algorithm
+  let bestScore;
+  if(player == 1){
+    bestScore = Number.NEGATIVE_INFINITY;
+  } else {
+    bestScore = Number.POSITIVE_INFINITY;
+  }
 
-  //pick best one
 
-  return { column: 1 };
+  for(let i = 0; i < availableMoves.length; i++) {
+    //evaluate each move with algorithm
+    let move = availableMoves[i];
+    
+    board[move[0]][move[1]] = 1;
+    let score = minimax(board, 7, player);
+    board[move[0]][move[1]] = 0;
+
+    //pick best one
+    if(player == 1) {
+      if(score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    } else {
+      if(score < bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
+  }
+
+  return { column: bestMove[1] };
+}
+
+/**
+ * Minimax algorithm
+ * @param {*} board 
+ * @param {*} depth 
+ * @param {*} player 
+ */
+function minimax(board, depth, player) {
+  if(depth == 0) {
+    return 0;
+  }
+  let winner = checkWinner(board);
+  if( winner != null) {
+   return heuristicVal(winner);
+  }
+
+  if(player == 1) { //maximizingplayer - player1
+    
+    let bestScore = Number.NEGATIVE_INFINITY;
+
+    let availableMoves = getAvailableMoves(board);
+    let move;
+    for(let i = 0; i < availableMoves.length; i++) {
+      move = availableMoves[i];
+
+      board[move[0]][move[1]] = 1;
+      let score = minimax(board, depth-1, 2);
+      board[move[0]][move[1]] = 0;
+      bestScore = Math.max(score, bestScore);
+    }
+
+    return bestScore;
+
+  } else { //minimizingplayer - player2
+    
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    let availableMoves = getAvailableMoves(board);
+    let move;
+    for(let i = 0; i < availableMoves.length; i++) {
+      move = availableMoves[i];
+
+      board[move[0]][move[1]] = 1;
+      let score = minimax(board, depth-1, 1);
+      board[move[0]][move[1]] = 0;
+      bestScore = Math.min(score, bestScore);
+    }
+
+    return bestScore;
+
+  }
+}
+
+/**
+ * helper function to get heuristic values of win states
+ * @param {*} winner 
+ */
+function heuristicVal(winner) {
+  if(winner == "1"){
+    return 1
+  } else if( winner == "2") {
+    return -1
+  } else if( winner == "Tie" ){
+    return 0;
+  }
 }
 
 function prepareResponse(move) {
