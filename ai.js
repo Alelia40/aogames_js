@@ -53,7 +53,8 @@ function checkForHorizontalWin(board) {
       //if there is 4 then return a win
       if (p1count === 4) {
         return "1";
-      } else if (p2count === 4) {
+      }
+      if (p2count === 4) {
         return "2";
       }
     }
@@ -91,7 +92,8 @@ function checkForVerticalWin(board) {
       //if there is 4 then return a win
       if (p1count === 4) {
         return "1";
-      } else if (p2count === 4) {
+      }
+      if (p2count === 4) {
         return "2";
       }
     }
@@ -178,12 +180,6 @@ function columnMove(board, column) {
  * @param {*} board 
  */
 function getRandomMove(player, board) {
-  // TODO: Determine valid moves
-  // TODO: Calculate best move
-  //console.log(player);
-  //console.log(board);
-
-  //find available moves
   let availableMoves = getAvailableMoves(board);
   console.log(availableMoves);
 
@@ -193,6 +189,15 @@ function getRandomMove(player, board) {
 }
 
 var MOVES_LEFT = 35; //constant that tracks number of moves left in a decision tree
+var STRATEGY = "defend"; //constant that tracks the strategy that AI is trying
+
+function switchStrategy() {
+  if(STRATEGY === "defend") {
+    STRATEGY = "attack";
+  } else {
+    STRATEGY = "defend";
+  }
+}
 
 /**
  * Function that runs moves
@@ -205,12 +210,13 @@ function getMove(player, board) {
   let availableMoves = getAvailableMoves(board);
   let bestMove;
   let bestScore;
-  if (player == 1) {
+  if(STRATEGY == "defend") {
     bestScore = Number.NEGATIVE_INFINITY;
   } else {
     bestScore = Number.POSITIVE_INFINITY;
   }
-
+    
+ 
   MOVES_LEFT--;
   console.log("depth:"+MOVES_LEFT);
 
@@ -219,14 +225,12 @@ function getMove(player, board) {
     let move = availableMoves[i];
 
     board[move[0]][move[1]] = 1;
-    //let score = minimax(board, 2, player);
-    let score = minimaxab(board, MOVES_LEFT, player, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    let score = minimaxab(player, board, MOVES_LEFT, true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
     board[move[0]][move[1]] = 0;
 
     console.log(move + " - " + score);
 
-    //pick best one
-    if (player == 1) {
+    if(STRATEGY === "defend") {
       if (score > bestScore) {
         bestScore = score;
         bestMove = move;
@@ -239,6 +243,8 @@ function getMove(player, board) {
     }
   }
 
+  switchStrategy(); //alternate between attacking and defending
+
   return { column: bestMove[1] };
 }
 
@@ -249,22 +255,17 @@ function getMove(player, board) {
  * @param {*} depth 
  * @param {*} player 
  */
-function minimaxab(board, depth, player, alpha, beta) {
+function minimaxab(playerNo, board, depth, maxplayer, alpha, beta) {
   let winner = checkWinner(board);
-  if (depth == 0 && winner !== null) {
-    if(winner == "1") {
-      return 1;
-    } else if (winner == "2") {
-      return -1;
-    }
-  }else if(depth ==0 && winner === null) {
+  
+  if(depth === 0) {
     return 0;
   }
-  else if (winner !== null && depth !==0) {
-    return heuristicVal(winner, depth, player);
+  if (winner !== null) {
+    return heuristicVal(winner, depth, playerNo);
   }
 
-  if (player === 1) { //maximizingplayer - player1
+  if (maxplayer) { //maximizingplayer - player1
 
     let bestScore = Number.NEGATIVE_INFINITY;
 
@@ -274,7 +275,7 @@ function minimaxab(board, depth, player, alpha, beta) {
       move = availableMoves[i];
 
       board[move[0]][move[1]] = 1;
-      let score = minimaxab(board, depth - 1, 2, alpha, beta); //get score for move
+      let score = minimaxab(playerNo, board, depth - 1, false, alpha, beta); //get score for move
       board[move[0]][move[1]] = 0;
 
       bestScore = Math.max(score, bestScore); //compare score to current best
@@ -297,13 +298,13 @@ function minimaxab(board, depth, player, alpha, beta) {
       move = availableMoves[i];
 
       board[move[0]][move[1]] = 1;
-      let score = minimaxab(board, depth - 1, 1, alpha, beta);
+      let score = minimaxab(playerNo, board, depth - 1, true, alpha, beta);
       board[move[0]][move[1]] = 0;
 
       bestScore = Math.min(score, bestScore);//compare score to current best
 
       beta = Math.min(beta, bestScore); //prune
-      if (beta >= alpha) {
+      if (beta <= alpha) {
         break;
       }
     }
@@ -312,70 +313,24 @@ function minimaxab(board, depth, player, alpha, beta) {
   }
 }
 
-/**
- * Minimax algorithm
- * @param {*} board 
- * @param {*} depth 
- * @param {*} player 
- */
-function minimax(board, depth, player) {
-  if(depth == 0) {
-    return 0;
-  }
-  let winner = checkWinner(board);
-  if( winner !== null) {
-   return heuristicVal(winner, depth, player);
-  }
-
-  if(player === 1) { //maximizingplayer - player1
-    
-    let bestScore = Number.NEGATIVE_INFINITY;
-
-    let availableMoves = getAvailableMoves(board);
-    let move;
-    for(let i = 0; i < availableMoves.length; i++) {
-      move = availableMoves[i];
-
-      board[move[0]][move[1]] = 1;
-      let score = minimax(board, depth-1, 2);
-      board[move[0]][move[1]] = 0;
-
-      bestScore = Math.max(score, bestScore);
-    }
-
-    return bestScore;
-
-  } else { //minimizingplayer - player2
-    
-    let bestScore = Number.POSITIVE_INFINITY;
-
-    let availableMoves = getAvailableMoves(board);
-    let move;
-    for(let i = 0; i < availableMoves.length; i++) {
-      move = availableMoves[i];
-
-      board[move[0]][move[1]] = 1;
-      let score = minimax(board, depth-1, 1);
-      board[move[0]][move[1]] = 0;
-
-      bestScore = Math.min(score, bestScore);
-    }
-
-    return bestScore;
-
-  }
-}
 
 /**
  * helper function to get heuristic values of win states
  * @param {*} winner 
  */
-function heuristicVal(winner, depth, player) {
+function heuristicVal(winner, depth, playerNo) {
   if (winner == "1") {
-    return depth * 1;
+    if (playerNo == 1){
+      return depth;
+    } else {
+      return depth * -7;
+    }
   } else if (winner == "2") {
-    console.log(depth* -1);
-    return depth * -1;
+    if (playerNo == 2){
+      return depth;
+    } else {
+      return depth * -7;
+    }
   } else {
     return 0;
   }
