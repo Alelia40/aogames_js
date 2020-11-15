@@ -227,7 +227,7 @@ function getMove(player, board) {
     //evaluate each move with algorithm
     let move = availableMoves[i];
 
-    board[move[0]][move[1]] = 1;
+    board[move[0]][move[1]] = player;
 
     let score;
     if(STRATEGY == "defend") {
@@ -277,7 +277,6 @@ function getMove(player, board) {
  */
 function minimaxab(playerNo, board, depth, maxplayer, alpha, beta) {
   let winner = checkWinner(board);
-  
   if(depth === 0) {
     return 0;
   }
@@ -294,7 +293,12 @@ function minimaxab(playerNo, board, depth, maxplayer, alpha, beta) {
     for (let i = 0; i < availableMoves.length; i++) {
       move = availableMoves[i];
 
-      board[move[0]][move[1]] = 1;
+      if(playerNo == 1) {
+        board[move[0]][move[1]] = 1;
+      } else {
+        board[move[0]][move[1]] = 2;
+      }
+      
       let score = minimaxab(playerNo, board, depth - 1, false, alpha, beta); //get score for move
       board[move[0]][move[1]] = 0;
 
@@ -316,8 +320,13 @@ function minimaxab(playerNo, board, depth, maxplayer, alpha, beta) {
     let move;
     for (let i = 0; i < availableMoves.length; i++) {
       move = availableMoves[i];
+      
+      if(playerNo == 1) {
+        board[move[0]][move[1]] = 1;
+      } else {
+        board[move[0]][move[1]] = 2;
+      }
 
-      board[move[0]][move[1]] = 1;
       let score = minimaxab(playerNo, board, depth - 1, true, alpha, beta);
       board[move[0]][move[1]] = 0;
 
