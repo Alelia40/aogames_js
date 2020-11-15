@@ -1,4 +1,7 @@
-
+/**
+ * Function that checks a win in all directions
+ * @param {*} board 
+ */
 function checkWinner(board) {
 
   //check horizontal and vertical for win
@@ -102,7 +105,7 @@ function checkForVerticalWin(board) {
 }
 
 /**
- * searches 3 spaces from each value in the table in horizontal directions for connect 4
+ * searches 3 spaces from each value in the table in diagonal directions for connect 4
  * @param {*} board 
  */
 function checkForDiagonalWin(board) {
@@ -153,7 +156,7 @@ function getAvailableMoves(board) {
 }
 
 /**
- * helper function that returns the first available move on one column
+ * helper function for getAvailableMoves that returns the first available move on one column
  * @param {*} board 
  * @param {*} column 
  */
@@ -189,7 +192,7 @@ function getRandomMove(player, board) {
   return { column: randomColumn };
 }
 
-
+var MOVES_LEFT = 35; //constant that tracks number of moves left in a decision tree
 
 /**
  * Function that runs moves
@@ -200,9 +203,7 @@ function getMove(player, board) {
 
   //find available moves
   let availableMoves = getAvailableMoves(board);
-
   let bestMove;
-
   let bestScore;
   if (player == 1) {
     bestScore = Number.NEGATIVE_INFINITY;
@@ -210,6 +211,8 @@ function getMove(player, board) {
     bestScore = Number.POSITIVE_INFINITY;
   }
 
+  MOVES_LEFT--;
+  console.log("depth:"+MOVES_LEFT);
 
   for (let i = 0; i < availableMoves.length; i++) {
     //evaluate each move with algorithm
@@ -217,7 +220,7 @@ function getMove(player, board) {
 
     board[move[0]][move[1]] = 1;
     //let score = minimax(board, 2, player);
-    let score = minimaxab(board, (35 - availableMoves.length), player, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    let score = minimaxab(board, MOVES_LEFT, player, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
     board[move[0]][move[1]] = 0;
 
     console.log(move + " - " + score);
@@ -247,13 +250,18 @@ function getMove(player, board) {
  * @param {*} player 
  */
 function minimaxab(board, depth, player, alpha, beta) {
-
-  if (depth == 0) {
+  let winner = checkWinner(board);
+  if (depth == 0 && winner !== null) {
+    if(winner == "1") {
+      return 1;
+    } else if (winner == "2") {
+      return -1;
+    }
+  }else if(depth ==0 && winner === null) {
     return 0;
   }
-  let winner = checkWinner(board);
-  if (winner !== null) {
-    return heuristicVal(winner, depth);
+  else if (winner !== null && depth !==0) {
+    return heuristicVal(winner, depth, player);
   }
 
   if (player === 1) { //maximizingplayer - player1
@@ -266,7 +274,7 @@ function minimaxab(board, depth, player, alpha, beta) {
       move = availableMoves[i];
 
       board[move[0]][move[1]] = 1;
-      let score = minimaxab(board, depth - 1, 2, alpha, beta);
+      let score = minimaxab(board, depth - 1, 2, alpha, beta); //get score for move
       board[move[0]][move[1]] = 0;
 
       bestScore = Math.max(score, bestScore); //compare score to current best
@@ -362,17 +370,14 @@ function minimax(board, depth, player) {
  * helper function to get heuristic values of win states
  * @param {*} winner 
  */
-function heuristicVal(winner, depth) {
+function heuristicVal(winner, depth, player) {
   if (winner == "1") {
     return depth * 1;
   } else if (winner == "2") {
+    console.log(depth* -1);
     return depth * -1;
   } else {
-    if(player === 1) {
-      return depth / 2;
-    } else {
-      return (depth / 2) * -1;
-    }
+    return 0;
   }
 }
 
