@@ -2,7 +2,7 @@
 const net = require('net');
 const ai = require('./ai');
 
-const defaultPort = 1338;
+const defaultPort = 1337;
 const defaultHost = 'localhost';
 const args = process.argv.slice(2);
 

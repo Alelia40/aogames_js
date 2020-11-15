@@ -1,4 +1,9 @@
 /**
+ * ai.js contains all functions necessary for usage of AI
+ * @author Alex Li, Jacob Williams
+ */
+
+/**
  * Function that checks a win in all directions
  * @param {*} board 
  */
@@ -140,7 +145,7 @@ function checkForDiagonalWin(board) {
 }
 
 /**
- * searches 3 spaces from each value in the table in diagonal directions for possible connect 4, returns location to block
+ * searches 3 spaces from each value in the table in diagonal directions for possible connect 4 for the opponent, returns location to block
  * @param {*} board 
  */
 function checkForBlock(board, currentPlayer) {
@@ -185,7 +190,7 @@ function checkForBlock(board, currentPlayer) {
     }
   }
 
-  if (block != null) {
+  if (block != null) { //check that the block we found is in the list of potential moves
     let availableMoves = getAvailableMoves(board);
     let blockIsAvailable = false;
     for (let i = 0; i < availableMoves.length; i++) {
@@ -239,7 +244,7 @@ function columnMove(board, column) {
 
 
 /**
- * Function that runs random moves
+ * Function that runs random moves DEPRECATED
  * @param {*} player 
  * @param {*} board 
  */
@@ -253,18 +258,7 @@ function getRandomMove(player, board) {
 }
 
 var MOVES_LEFT = 35; //constant that tracks number of moves left in a decision tree
-var STRATEGY = "defend"; //constant that tracks the strategy that AI is trying
 
-/**
- * helper function that switches the strategey constant
- */
-function switchStrategy() {
-  if (STRATEGY === "defend") {
-    STRATEGY = "attack";
-  } else {
-    STRATEGY = "defend";
-  }
-}
 
 /**
  * Function that runs moves
@@ -282,13 +276,8 @@ function getMove(player, board) {
     let availableMoves = getAvailableMoves(board);
 
     let bestMove;
-    let bestScore;
-    if (STRATEGY == "defend") {
-      bestScore = Number.NEGATIVE_INFINITY;
-    } else {
-      bestScore = Number.POSITIVE_INFINITY;
-    }
-
+    let bestScore = Number.NEGATIVE_INFINITY;
+    
     MOVES_LEFT--;
     console.log("depth:" + MOVES_LEFT);
 
@@ -298,12 +287,7 @@ function getMove(player, board) {
 
       board[move[0]][move[1]] = player;
 
-      let score;
-      if (STRATEGY == "defend") {
-        score = minimaxab(player, board, MOVES_LEFT, true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
-      } else {
-        score = minimaxab(player, board, MOVES_LEFT, false, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
-      }
+      let score = minimaxab(player, board, MOVES_LEFT, true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
 
       //check for imminent danger if doing this move
       if (checkForBlock(board, player) != null) {
@@ -314,30 +298,16 @@ function getMove(player, board) {
 
       console.log(move + " - " + score);
 
-      if (STRATEGY === "defend") {
-        if (score > bestScore) {
+      if (score > bestScore) { //if the score is optimal then change the move to the one found
+        bestScore = score;
+        bestMove = move;
+      } else if (score == bestScore) { //favor the middle column if the algorithm determines 2 moves have the same value
+        if (move[1] === 3) {
           bestScore = score;
           bestMove = move;
-        } else if (score == bestScore) { //favor the middle column if the algorithm determines they have the same value
-          if (move[1] === 3) {
-            bestScore = score;
-            bestMove = move;
-          }
-        }
-      } else {
-        if (score < bestScore) {
-          bestScore = score;
-          bestMove = move;
-        } else if (score == bestScore) { //favor the middle column if the algorithm determines they have the same value
-          if (move[1] === 3) {
-            bestScore = score;
-            bestMove = move;
-          }
         }
       }
     }
-
-    //switchStrategy(); //with each move the strategy will alternat, when attacking the AI will try to take the opponent's best move first
 
     return { column: bestMove[1] };
   }
