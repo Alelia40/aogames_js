@@ -1,6 +1,5 @@
 
 function checkWinner(board) {
-  let winner = null;
 
   //check horizontal and vertical for win
   let horizontalCheck = checkForHorizontalWin(board);
@@ -15,7 +14,7 @@ function checkWinner(board) {
 
   //check diagonal for win
   let diagCheck = checkForDiagonalWin(board);
-  if(diagCheck != null) {
+  if (diagCheck != null) {
     return diagCheck;
   }
 
@@ -23,6 +22,8 @@ function checkWinner(board) {
   if (getAvailableMoves(board).length === 0 && winner != null) {
     return "Tie";
   }
+
+  return null; //if no cases match
 }
 
 /**
@@ -106,26 +107,26 @@ function checkForVerticalWin(board) {
  */
 function checkForDiagonalWin(board) {
   let winner = null;
-  let directions = [[1,-1],[-1,-1]]; //2 diagonal directions, top left to bottom right + top right to bottom left
+  let directions = [[1, -1], [-1, -1]]; //2 diagonal directions, top left to bottom right + top right to bottom left
   let currentDirection;
-  for(let d = 0; d < 2; d++) {
+  for (let d = 0; d < 2; d++) {
     //set slant
     currentDirection = directions[d];
     let slantx = currentDirection[0];
     let slanty = currentDirection[1];
 
-    for(let i = 0; i < 6; i++) {
-      for(let j = 0; j < 7; j++) {
+    for (let i = 0; i < 6; i++) {
+      for (let j = 0; j < 7; j++) {
         //set an end coordinate 3 away in a diagonal direction
-        let xend = j + (3*slantx);
-        let yend = i + (3*slanty); 
+        let xend = j + (3 * slantx);
+        let yend = i + (3 * slanty);
 
-        if(0 <= xend && xend < 7 && 0 <= yend && yend < 6 ) { //only evaluate the node if we can get a diagonal from that position (not out of bounds)
-          let spaceval = board[i][j]; 
-          if( spaceval != 0  && spaceval == board[i + slanty][j + slantx] && spaceval == board[i + (2*slanty)][j + (2*slantx)] && spaceval == board[yend][xend] ){ //if there's a win then set the winner
+        if (0 <= xend && xend < 7 && 0 <= yend && yend < 6) { //only evaluate the node if we can get a diagonal from that position (not out of bounds)
+          let spaceval = board[i][j];
+          if (spaceval != 0 && spaceval == board[i + slanty][j + slantx] && spaceval == board[i + (2 * slanty)][j + (2 * slantx)] && spaceval == board[yend][xend]) { //if there's a win then set the winner
             winner = spaceval.toString();
           }
-        } 
+        }
       }
     }
   }
@@ -188,42 +189,47 @@ function getRandomMove(player, board) {
   return { column: randomColumn };
 }
 
+
+
 /**
  * Function that runs moves
  * @param {*} player 
  * @param {*} board 
  */
 function getMove(player, board) {
-  
+
   //find available moves
   let availableMoves = getAvailableMoves(board);
-  
+
   let bestMove;
 
   let bestScore;
-  if(player == 1){
+  if (player == 1) {
     bestScore = Number.NEGATIVE_INFINITY;
   } else {
     bestScore = Number.POSITIVE_INFINITY;
   }
 
 
-  for(let i = 0; i < availableMoves.length; i++) {
+  for (let i = 0; i < availableMoves.length; i++) {
     //evaluate each move with algorithm
     let move = availableMoves[i];
-    
+
     board[move[0]][move[1]] = 1;
-    let score = minimax(board, 7, player);
+    //let score = minimax(board, 2, player);
+    let score = minimaxab(board, (35 - availableMoves.length), player, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
     board[move[0]][move[1]] = 0;
 
+    console.log(move + " - " + score);
+
     //pick best one
-    if(player == 1) {
-      if(score > bestScore) {
+    if (player == 1) {
+      if (score > bestScore) {
         bestScore = score;
         bestMove = move;
       }
     } else {
-      if(score < bestScore) {
+      if (score < bestScore) {
         bestScore = score;
         bestMove = move;
       }
@@ -231,6 +237,71 @@ function getMove(player, board) {
   }
 
   return { column: bestMove[1] };
+}
+
+
+/**
+ * Minimax algorithm
+ * @param {*} board 
+ * @param {*} depth 
+ * @param {*} player 
+ */
+function minimaxab(board, depth, player, alpha, beta) {
+
+  if (depth == 0) {
+    return 0;
+  }
+  let winner = checkWinner(board);
+  if (winner !== null) {
+    return heuristicVal(winner, depth);
+  }
+
+  if (player === 1) { //maximizingplayer - player1
+
+    let bestScore = Number.NEGATIVE_INFINITY;
+
+    let availableMoves = getAvailableMoves(board);
+    let move;
+    for (let i = 0; i < availableMoves.length; i++) {
+      move = availableMoves[i];
+
+      board[move[0]][move[1]] = 1;
+      let score = minimaxab(board, depth - 1, 2, alpha, beta);
+      board[move[0]][move[1]] = 0;
+
+      bestScore = Math.max(score, bestScore); //compare score to current best
+
+      alpha = Math.max(alpha, bestScore); //prune
+      if (alpha >= beta) {
+        break;
+      }
+    }
+    
+    return bestScore;
+
+  } else { //minimizingplayer - player2
+
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    let availableMoves = getAvailableMoves(board);
+    let move;
+    for (let i = 0; i < availableMoves.length; i++) {
+      move = availableMoves[i];
+
+      board[move[0]][move[1]] = 1;
+      let score = minimaxab(board, depth - 1, 1, alpha, beta);
+      board[move[0]][move[1]] = 0;
+
+      bestScore = Math.min(score, bestScore);//compare score to current best
+
+      beta = Math.min(beta, bestScore); //prune
+      if (beta >= alpha) {
+        break;
+      }
+    }
+    
+    return bestScore;
+  }
 }
 
 /**
@@ -244,11 +315,11 @@ function minimax(board, depth, player) {
     return 0;
   }
   let winner = checkWinner(board);
-  if( winner != null) {
-   return heuristicVal(winner);
+  if( winner !== null) {
+   return heuristicVal(winner, depth, player);
   }
 
-  if(player == 1) { //maximizingplayer - player1
+  if(player === 1) { //maximizingplayer - player1
     
     let bestScore = Number.NEGATIVE_INFINITY;
 
@@ -260,6 +331,7 @@ function minimax(board, depth, player) {
       board[move[0]][move[1]] = 1;
       let score = minimax(board, depth-1, 2);
       board[move[0]][move[1]] = 0;
+
       bestScore = Math.max(score, bestScore);
     }
 
@@ -277,6 +349,7 @@ function minimax(board, depth, player) {
       board[move[0]][move[1]] = 1;
       let score = minimax(board, depth-1, 1);
       board[move[0]][move[1]] = 0;
+
       bestScore = Math.min(score, bestScore);
     }
 
@@ -289,13 +362,17 @@ function minimax(board, depth, player) {
  * helper function to get heuristic values of win states
  * @param {*} winner 
  */
-function heuristicVal(winner) {
-  if(winner == "1"){
-    return 1
-  } else if( winner == "2") {
-    return -1
-  } else if( winner == "Tie" ){
-    return 0;
+function heuristicVal(winner, depth) {
+  if (winner == "1") {
+    return depth * 1;
+  } else if (winner == "2") {
+    return depth * -1;
+  } else {
+    if(player === 1) {
+      return depth / 2;
+    } else {
+      return (depth / 2) * -1;
+    }
   }
 }
 
