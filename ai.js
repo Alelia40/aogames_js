@@ -263,7 +263,7 @@ function getMove(player, board) {
     }
   }
 
-  //switchStrategy(); //with each move the strategy will alternat, when attacking the AI will try to take the opponent's best move first
+  switchStrategy(); //with each move the strategy will alternat, when attacking the AI will try to take the opponent's best move first
 
   return { column: bestMove[1] };
 }
