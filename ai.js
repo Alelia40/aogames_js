@@ -191,6 +191,9 @@ function getRandomMove(player, board) {
 var MOVES_LEFT = 35; //constant that tracks number of moves left in a decision tree
 var STRATEGY = "defend"; //constant that tracks the strategy that AI is trying
 
+/**
+ * helper function that switches the strategey constant
+ */
 function switchStrategy() {
   if(STRATEGY === "defend") {
     STRATEGY = "attack";
@@ -225,7 +228,14 @@ function getMove(player, board) {
     let move = availableMoves[i];
 
     board[move[0]][move[1]] = 1;
-    let score = minimaxab(player, board, MOVES_LEFT, true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+
+    let score;
+    if(STRATEGY == "defend") {
+      score = minimaxab(player, board, MOVES_LEFT, true, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    } else {
+      score = minimaxab(player, board, MOVES_LEFT, false, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    }
+
     board[move[0]][move[1]] = 0;
 
     console.log(move + " - " + score);
@@ -234,16 +244,26 @@ function getMove(player, board) {
       if (score > bestScore) {
         bestScore = score;
         bestMove = move;
+      } else if(score == bestScore) { //favor the middle column if the algorithm determines they have the same value
+        if( move[1] === 3) {
+          bestScore = score;
+          bestMove = move;
+        }
       }
     } else {
       if (score < bestScore) {
         bestScore = score;
         bestMove = move;
+      } else if(score == bestScore) { //favor the middle column if the algorithm determines they have the same value
+        if( move[1] === 3) {
+          bestScore = score;
+          bestMove = move;
+        }
       }
     }
   }
 
-  switchStrategy(); //alternate between attacking and defending
+  //switchStrategy(); //with each move the strategy will alternat, when attacking the AI will try to take the opponent's best move first
 
   return { column: bestMove[1] };
 }

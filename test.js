@@ -18,6 +18,12 @@ test('horizontal check #2', () => {
 test('horizontal check #3', () => {
   expect(ai.checkWinner([[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[1,1,1,2,2,2,1],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]])).toEqual(null);
 })
+test('horizontal check #2', () => {
+  expect(ai.checkWinner([[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[2,1,2,1,2,1,2],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]])).toEqual(null);
+})
+test('horizontal check #2', () => {
+  expect(ai.checkWinner([[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[1,1,1,2,1,2,2],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]])).toEqual(null);
+})
 
 
 test('verticalwin check', () => {
